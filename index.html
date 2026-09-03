@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Simulador de Parcelas</title>
+
+    <link rel="stylesheet" href="./style.css">
+    <script src="./script.js" defer></script>
+</head>
+
+<body>
+    <header class="cabecalho">
+        <a class="marca" href="#inicio">Simulador de Parcelas</a>
+        <span class="status">Projeto pessoal</span>
+    </header>
+
+    <main id="inicio">
+        <section class="apresentacao">
+            <p class="sobrelinha">Planejamento financeiro</p>
+            <h1>Calcule suas parcelas antes de decidir.</h1>
+            <p>
+                Informe o valor, a quantidade de parcelas e a taxa de juros para visualizar
+                o resultado.
+            </p>
+        </section>
+
+        <section class="simulador" aria-labelledby="titulo-simulador">
+            <h2 id="titulo-simulador">Simulação</h2>
+
+            <form id="formulario-simulacao">
+                <div class="campo">
+                    <label for="valor-compra">Valor da compra</label>
+                    <input id="valor-compra" type="number" min="0.01" step="0.01" placeholder="Ex.: 1500,00" required>
+                </div>
+
+                <div class="campo">
+                    <label for="quantidade-parcelas">Quantidade de parcelas</label>
+                    <input id="quantidade-parcelas" type="number" min="1" step="1" placeholder="Ex.: 12" required>
+                </div>
+
+                <div class="campo">
+                    <label for="juros-mensais">Juros ao mês (%)</label>
+                    <input id="juros-mensais" type="number" min="0" step="0.01" placeholder="Ex.: 2,5" required>
+                </div>
+
+                <button type="submit">Calcular parcelas</button>
+            </form>
+
+            <section id="resultado" class="resultado" aria-live="polite" hidden>
+                <h2>Resultado</h2>
+
+                <p>Valor da parcela: <strong id="valor-parcela"></strong></p>
+                <p>Total pago: <strong id="total-pago"></strong></p>
+                <p>Total em juros: <strong id="total-juros"></strong></p>
+            </section>
+        </section>
+    </main>
+</body>
+
+</html>
