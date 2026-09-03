@@ -5,7 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Simulador de Parcelas</title>
+    <meta name="description" content="Aplicação para organizar e acompanhar compras parceladas.">
+
+    <title>Controle de Parcelas</title>
 
     <link rel="stylesheet" href="./style.css">
     <script src="./script.js" defer></script>
@@ -13,49 +15,126 @@
 
 <body>
     <header class="cabecalho">
-        <a class="marca" href="#inicio">Simulador de Parcelas</a>
-        <span class="status">Projeto pessoal</span>
+        <a class="marca" href="#inicio">Controle de Parcelas</a>
+        <span class="tecnologia">JavaScript</span>
     </header>
 
-    <main id="inicio">
-        <section class="apresentacao">
-            <p class="sobrelinha">Planejamento financeiro</p>
-            <h1>Calcule suas parcelas antes de decidir.</h1>
-            <p>
-                Informe o valor, a quantidade de parcelas e a taxa de juros para visualizar
-                o resultado.
+    <main class="conteudo" id="inicio">
+        <section class="introducao">
+            <p class="sobrelinha">Organização financeira</p>
+
+            <h1>Acompanhe suas compras parceladas.</h1>
+
+            <p class="introducao-texto">
+                Cadastre suas compras, acompanhe os valores mensais e saiba quando
+                cada compromisso será encerrado.
             </p>
         </section>
 
-        <section class="simulador" aria-labelledby="titulo-simulador">
-            <h2 id="titulo-simulador">Simulação</h2>
+        <section class="resumo" aria-label="Resumo das compras parceladas">
+            <article class="resumo-item">
+                <span>Compras cadastradas</span>
+                <strong id="quantidade-compras">0</strong>
+            </article>
 
-            <form id="formulario-simulacao">
-                <div class="campo">
-                    <label for="valor-compra">Valor da compra</label>
-                    <input id="valor-compra" type="number" min="0.01" step="0.01" placeholder="Ex.: 1500,00" required>
+            <article class="resumo-item">
+                <span>Compromisso mensal</span>
+                <strong id="compromisso-mensal">R$ 0,00</strong>
+            </article>
+
+            <article class="resumo-item">
+                <span>Total parcelado</span>
+                <strong id="total-parcelado">R$ 0,00</strong>
+            </article>
+        </section>
+
+        <section class="painel">
+            <div class="cartao formulario-cartao">
+                <div class="titulo-secao">
+                    <p class="sobrelinha">Nova compra</p>
+                    <h2>Dados do parcelamento</h2>
                 </div>
 
-                <div class="campo">
-                    <label for="quantidade-parcelas">Quantidade de parcelas</label>
-                    <input id="quantidade-parcelas" type="number" min="1" step="1" placeholder="Ex.: 12" required>
+                <form id="formulario-compra">
+                    <div class="campo campo-completo">
+                        <label for="descricao-compra">Descrição</label>
+                        <input id="descricao-compra" name="descricaoCompra" type="text" maxlength="60"
+                            placeholder="Ex.: Televisão" required>
+                    </div>
+
+                    <div class="campo">
+                        <label for="valor-total">Valor total</label>
+                        <input id="valor-total" name="valorTotal" type="number" min="0.01" step="0.01"
+                            placeholder="Ex.: 2400,00" required>
+                    </div>
+
+                    <div class="campo">
+                        <label for="quantidade-parcelas">Quantidade de parcelas</label>
+                        <input id="quantidade-parcelas" name="quantidadeParcelas" type="number" min="1" max="120"
+                            step="1" placeholder="Ex.: 12" required>
+                    </div>
+
+                    <div class="campo campo-completo">
+                        <label for="primeiro-vencimento">Primeiro vencimento</label>
+                        <input id="primeiro-vencimento" name="primeiroVencimento" type="date" required>
+                    </div>
+
+                    <p class="mensagem-erro" id="mensagem-erro" role="alert" hidden></p>
+
+                    <button class="botao-principal" type="submit">
+                        Adicionar compra
+                    </button>
+                </form>
+            </div>
+
+            <aside class="cartao previsao" aria-labelledby="titulo-previsao">
+                <div class="titulo-secao">
+                    <p class="sobrelinha">Prévia</p>
+                    <h2 id="titulo-previsao">Resumo do parcelamento</h2>
                 </div>
 
-                <div class="campo">
-                    <label for="juros-mensais">Juros ao mês (%)</label>
-                    <input id="juros-mensais" type="number" min="0" step="0.01" placeholder="Ex.: 2,5" required>
+                <div class="previsao-destaque">
+                    <span>Valor de cada parcela</span>
+                    <strong id="previa-valor-parcela">R$ 0,00</strong>
                 </div>
 
-                <button type="submit">Calcular parcelas</button>
-            </form>
+                <dl class="previsao-detalhes">
+                    <div>
+                        <dt>Total da compra</dt>
+                        <dd id="previa-valor-total">R$ 0,00</dd>
+                    </div>
 
-            <section id="resultado" class="resultado" aria-live="polite" hidden>
-                <h2>Resultado</h2>
+                    <div>
+                        <dt>Quantidade</dt>
+                        <dd id="previa-quantidade">0 parcelas</dd>
+                    </div>
 
-                <p>Valor da parcela: <strong id="valor-parcela"></strong></p>
-                <p>Total pago: <strong id="total-pago"></strong></p>
-                <p>Total em juros: <strong id="total-juros"></strong></p>
-            </section>
+                    <div>
+                        <dt>Último vencimento</dt>
+                        <dd id="previa-ultimo-vencimento">—</dd>
+                    </div>
+                </dl>
+            </aside>
+        </section>
+
+        <section class="compras" aria-labelledby="titulo-compras">
+            <div class="compras-cabecalho">
+                <div>
+                    <p class="sobrelinha">Acompanhamento</p>
+                    <h2 id="titulo-compras">Compras cadastradas</h2>
+                </div>
+
+                <button class="botao-secundario" id="botao-limpar" type="button" hidden>
+                    Limpar compras
+                </button>
+            </div>
+
+            <div class="lista-compras" id="lista-compras">
+                <div class="estado-vazio" id="estado-vazio">
+                    <strong>Nenhuma compra cadastrada.</strong>
+                    <p>Utilize o formulário para adicionar o primeiro parcelamento.</p>
+                </div>
+            </div>
         </section>
     </main>
 </body>
