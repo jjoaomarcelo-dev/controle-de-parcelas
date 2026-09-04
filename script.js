@@ -1,3 +1,5 @@
+const formulario = document.querySelector("#formulario-compra");
+const campoDescricao = document.querySelector("#descricao-compra");
 const campoValorTotal = document.querySelector("#valor-total");
 const campoQuantidadeParcelas = document.querySelector("#quantidade-parcelas");
 const campoPrimeiroVencimento = document.querySelector("#primeiro-vencimento");
@@ -8,6 +10,15 @@ const previaQuantidade = document.querySelector("#previa-quantidade");
 const previaUltimoVencimento = document.querySelector(
   "#previa-ultimo-vencimento"
 );
+
+const quantidadeCompras = document.querySelector("#quantidade-compras");
+const compromissoMensal = document.querySelector("#compromisso-mensal");
+const totalParcelado = document.querySelector("#total-parcelado");
+const listaCompras = document.querySelector("#lista-compras");
+const estadoVazio = document.querySelector("#estado-vazio");
+const mensagemErro = document.querySelector("#mensagem-erro");
+
+let compras = [];
 
 function formatarMoeda(valor) {
   return valor.toLocaleString("pt-BR", {
@@ -85,7 +96,7 @@ function atualizarPrevia() {
     previaValorParcela.textContent = formatarMoeda(0);
     previaValorTotal.textContent = formatarMoeda(0);
     previaQuantidade.textContent = "0 parcelas";
-    previaUltimoVencimento.textContent = "—";
+    previaUltimoVencimento.textContent = "\u2014";
     return;
   }
 
@@ -107,8 +118,83 @@ function atualizarPrevia() {
     previaUltimoVencimento.textContent =
       ultimoVencimento.toLocaleDateString("pt-BR");
   } else {
-    previaUltimoVencimento.textContent = "—";
+    previaUltimoVencimento.textContent = "\u2014";
   }
+}
+
+function atualizarResumo() {
+  const totalDasCompras = compras.reduce(function (total, compra) {
+    return total + compra.valorTotal;
+  }, 0);
+
+  const totalDasParcelas = compras.reduce(function (total, compra) {
+    return total + compra.valorParcela;
+  }, 0);
+
+  quantidadeCompras.textContent = compras.length;
+  compromissoMensal.textContent = formatarMoeda(totalDasParcelas);
+  totalParcelado.textContent = formatarMoeda(totalDasCompras);
+}
+
+function criarInformacaoCompra(rotulo, valor) {
+  const informacao = document.createElement("div");
+  informacao.classList.add("compra-informacao");
+
+  const legenda = document.createElement("span");
+  legenda.textContent = rotulo;
+
+  const conteudo = document.createElement("strong");
+  conteudo.textContent = valor;
+
+  informacao.append(legenda, conteudo);
+
+  return informacao;
+}
+
+function mostrarCompras() {
+  if (compras.length === 0) {
+    listaCompras.replaceChildren(estadoVazio);
+    return;
+  }
+
+  const itens = compras.map(function (compra) {
+    const item = document.createElement("article");
+    item.classList.add("compra-item");
+
+    const identificacao = document.createElement("div");
+    const titulo = document.createElement("h3");
+    const descricaoParcelas = document.createElement("p");
+
+    titulo.textContent = compra.descricao;
+    descricaoParcelas.textContent =
+      `${compra.quantidadeParcelas}x de ${formatarMoeda(compra.valorParcela)}`;
+
+    identificacao.append(titulo, descricaoParcelas);
+
+    const valorTotal = criarInformacaoCompra(
+      "Valor total",
+      formatarMoeda(compra.valorTotal)
+    );
+    const primeiroVencimento = criarInformacaoCompra(
+      "Primeiro vencimento",
+      compra.primeiroVencimento
+    );
+    const ultimoVencimento = criarInformacaoCompra(
+      "Último vencimento",
+      compra.ultimoVencimento
+    );
+
+    item.append(
+      identificacao,
+      valorTotal,
+      primeiroVencimento,
+      ultimoVencimento
+    );
+
+    return item;
+  });
+
+  listaCompras.replaceChildren(...itens);
 }
 
 campoValorTotal.addEventListener("input", atualizarPrevia);
@@ -117,4 +203,63 @@ campoQuantidadeParcelas.addEventListener("input", atualizarPrevia);
 campoPrimeiroVencimento.addEventListener("input", function (evento) {
   formatarCampoData(evento);
   atualizarPrevia();
+});
+
+formulario.addEventListener("submit", function (evento) {
+  evento.preventDefault();
+
+  const descricao = campoDescricao.value.trim();
+  const valorTotal = Number(campoValorTotal.value);
+  const quantidadeParcelas = Number(campoQuantidadeParcelas.value);
+  const primeiroVencimento = converterTextoEmData(
+    campoPrimeiroVencimento.value
+  );
+
+  const dadosValidos =
+    descricao !== "" &&
+    valorTotal > 0 &&
+    Number.isInteger(quantidadeParcelas) &&
+    quantidadeParcelas > 0 &&
+    primeiroVencimento !== null;
+
+  if (!dadosValidos) {
+    mensagemErro.textContent = "Preencha todos os campos corretamente.";
+    mensagemErro.hidden = false;
+    return;
+  }
+
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+
+  if (primeiroVencimento < hoje) {
+    mensagemErro.textContent =
+      "O primeiro vencimento não pode estar no passado.";
+    mensagemErro.hidden = false;
+    return;
+  }
+
+  const ultimoVencimento = adicionarMeses(
+    primeiroVencimento,
+    quantidadeParcelas - 1
+  );
+
+  const compra = {
+    id: Date.now(),
+    descricao,
+    valorTotal,
+    quantidadeParcelas,
+    valorParcela: valorTotal / quantidadeParcelas,
+    primeiroVencimento: campoPrimeiroVencimento.value,
+    ultimoVencimento: ultimoVencimento.toLocaleDateString("pt-BR")
+  };
+
+  compras.push(compra);
+  mensagemErro.hidden = true;
+
+  mostrarCompras();
+  atualizarResumo();
+
+  formulario.reset();
+  atualizarPrevia();
+  campoDescricao.focus();
 });
