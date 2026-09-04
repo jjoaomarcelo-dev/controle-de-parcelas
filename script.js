@@ -18,7 +18,29 @@ const listaCompras = document.querySelector("#lista-compras");
 const estadoVazio = document.querySelector("#estado-vazio");
 const mensagemErro = document.querySelector("#mensagem-erro");
 
-let compras = [];
+const chaveArmazenamento = "controleDeParcelas.compras";
+
+let compras = carregarCompras();
+
+function carregarCompras() {
+  try {
+    const comprasSalvas = localStorage.getItem(chaveArmazenamento);
+
+    if (!comprasSalvas) {
+      return [];
+    }
+
+    const dadosConvertidos = JSON.parse(comprasSalvas);
+
+    return Array.isArray(dadosConvertidos) ? dadosConvertidos : [];
+  } catch {
+    return [];
+  }
+}
+
+function salvarCompras() {
+  localStorage.setItem(chaveArmazenamento, JSON.stringify(compras));
+}
 
 function formatarMoeda(valor) {
   return valor.toLocaleString("pt-BR", {
@@ -230,6 +252,7 @@ listaCompras.addEventListener("click", function (evento) {
     return compra.id !== idDaCompra;
   });
 
+  salvarCompras();
   mostrarCompras();
   atualizarResumo();
 });
@@ -283,6 +306,7 @@ formulario.addEventListener("submit", function (evento) {
   };
 
   compras.push(compra);
+  salvarCompras();
   mensagemErro.hidden = true;
 
   mostrarCompras();
@@ -292,3 +316,6 @@ formulario.addEventListener("submit", function (evento) {
   atualizarPrevia();
   campoDescricao.focus();
 });
+
+mostrarCompras();
+atualizarResumo();
