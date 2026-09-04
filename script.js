@@ -184,11 +184,23 @@ function mostrarCompras() {
       compra.ultimoVencimento
     );
 
+    const botaoExcluir = document.createElement("button");
+    botaoExcluir.classList.add("botao-excluir");
+    botaoExcluir.type = "button";
+    botaoExcluir.dataset.id = compra.id;
+    botaoExcluir.textContent = "×";
+    botaoExcluir.title = `Excluir ${compra.descricao}`;
+    botaoExcluir.setAttribute(
+      "aria-label",
+      `Excluir compra ${compra.descricao}`
+    );
+
     item.append(
       identificacao,
       valorTotal,
       primeiroVencimento,
-      ultimoVencimento
+      ultimoVencimento,
+      botaoExcluir
     );
 
     return item;
@@ -203,6 +215,23 @@ campoQuantidadeParcelas.addEventListener("input", atualizarPrevia);
 campoPrimeiroVencimento.addEventListener("input", function (evento) {
   formatarCampoData(evento);
   atualizarPrevia();
+});
+
+listaCompras.addEventListener("click", function (evento) {
+  const botaoExcluir = evento.target.closest(".botao-excluir");
+
+  if (!botaoExcluir) {
+    return;
+  }
+
+  const idDaCompra = Number(botaoExcluir.dataset.id);
+
+  compras = compras.filter(function (compra) {
+    return compra.id !== idDaCompra;
+  });
+
+  mostrarCompras();
+  atualizarResumo();
 });
 
 formulario.addEventListener("submit", function (evento) {
