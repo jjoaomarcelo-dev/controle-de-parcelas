@@ -190,6 +190,10 @@ a {
     box-shadow: 0 0 0 3px rgb(66 184 178 / 12%);
 }
 
+#primeiro-vencimento:focus::placeholder {
+    color: transparent;
+}
+
 .mensagem-erro {
     grid-column: 1 / -1;
     margin: 0;
