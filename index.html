@@ -63,6 +63,24 @@
                     </div>
 
                     <div class="campo">
+                        <label for="data-compra">Data da compra</label>
+                        <input id="data-compra" name="dataCompra" type="text" inputmode="numeric" maxlength="10"
+                            placeholder="dd/mm/aaaa" autocomplete="off" required>
+                    </div>
+
+                    <div class="campo">
+                        <label for="forma-pagamento">Forma de pagamento</label>
+                        <select id="forma-pagamento" name="formaPagamento" required>
+                            <option value="">Selecione</option>
+                            <option value="Cartão de crédito">Cartão de crédito</option>
+                            <option value="Carnê">Carnê</option>
+                            <option value="Financiamento">Financiamento</option>
+                            <option value="Empréstimo">Empréstimo</option>
+                            <option value="Outro">Outro</option>
+                        </select>
+                    </div>
+
+                    <div class="campo">
                         <label for="valor-total">Valor total</label>
                         <input id="valor-total" name="valorTotal" type="number" min="0.01" step="0.01"
                             placeholder="Ex.: 2400,00" required>
@@ -81,7 +99,7 @@
                     </div>
 
                     <div class="campo">
-                        <label for="primeiro-vencimento">Primeiro vencimento</label>
+                        <label for="primeiro-vencimento" id="rotulo-primeiro-vencimento">Primeiro vencimento</label>
                         <input id="primeiro-vencimento" name="primeiroVencimento" type="text" inputmode="numeric"
                             maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" required>
                     </div>
@@ -127,7 +145,7 @@
                     </div>
 
                     <div>
-                        <dt>Último vencimento</dt>
+                        <dt id="rotulo-ultimo-vencimento">Último vencimento</dt>
                         <dd id="previa-ultimo-vencimento">—</dd>
                     </div>
                 </dl>

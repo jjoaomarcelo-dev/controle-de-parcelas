@@ -1,9 +1,17 @@
 const formulario = document.querySelector("#formulario-compra");
 const campoDescricao = document.querySelector("#descricao-compra");
+const campoDataCompra = document.querySelector("#data-compra");
+const campoFormaPagamento = document.querySelector("#forma-pagamento");
 const campoValorTotal = document.querySelector("#valor-total");
 const campoQuantidadeParcelas = document.querySelector("#quantidade-parcelas");
 const campoParcelasPagas = document.querySelector("#parcelas-pagas");
 const campoPrimeiroVencimento = document.querySelector("#primeiro-vencimento");
+const rotuloPrimeiroVencimento = document.querySelector(
+  "#rotulo-primeiro-vencimento"
+);
+const rotuloUltimoVencimento = document.querySelector(
+  "#rotulo-ultimo-vencimento"
+);
 
 const previaValorParcela = document.querySelector("#previa-valor-parcela");
 const previaValorTotal = document.querySelector("#previa-valor-total");
@@ -124,6 +132,47 @@ function adicionarMeses(dataInicial, quantidadeMeses) {
   return novaData;
 }
 
+function obterRotuloVencimento(formaPagamento) {
+  if (formaPagamento === "Cartão de crédito") {
+    return "Vencimento da primeira fatura";
+  }
+
+  if (
+    formaPagamento === "Carnê" ||
+    formaPagamento === "Financiamento" ||
+    formaPagamento === "Empréstimo"
+  ) {
+    return "Vencimento da primeira parcela";
+  }
+
+  return "Primeiro vencimento";
+}
+
+function obterRotuloUltimoVencimento(formaPagamento) {
+  if (formaPagamento === "Cartão de crédito") {
+    return "Vencimento da última fatura";
+  }
+
+  if (
+    formaPagamento === "Carnê" ||
+    formaPagamento === "Financiamento" ||
+    formaPagamento === "Empréstimo"
+  ) {
+    return "Vencimento da última parcela";
+  }
+
+  return "Último vencimento";
+}
+
+function atualizarRotuloVencimento() {
+  rotuloPrimeiroVencimento.textContent = obterRotuloVencimento(
+    campoFormaPagamento.value
+  );
+  rotuloUltimoVencimento.textContent = obterRotuloUltimoVencimento(
+    campoFormaPagamento.value
+  );
+}
+
 function atualizarPrevia() {
   const valorTotal = Number(campoValorTotal.value);
   const quantidadeParcelas = Number(campoQuantidadeParcelas.value);
@@ -226,6 +275,7 @@ function mostrarCompras() {
 
     titulo.textContent = compra.descricao;
     descricaoParcelas.textContent =
+      `${compra.formaPagamento || "Forma não informada"} · ` +
       `${compra.parcelasPagas} de ${compra.quantidadeParcelas} parcelas pagas`;
 
     identificacao.append(titulo, descricaoParcelas);
@@ -234,12 +284,16 @@ function mostrarCompras() {
       "Saldo em aberto",
       formatarMoeda(compra.saldoEmAberto)
     );
+    const dataCompra = criarInformacaoCompra(
+      "Data da compra",
+      compra.dataCompra || "Não informada"
+    );
     const primeiroVencimento = criarInformacaoCompra(
-      "Primeiro vencimento",
+      obterRotuloVencimento(compra.formaPagamento),
       compra.primeiroVencimento
     );
     const ultimoVencimento = criarInformacaoCompra(
-      "Último vencimento",
+      obterRotuloUltimoVencimento(compra.formaPagamento),
       compra.ultimoVencimento
     );
 
@@ -257,6 +311,7 @@ function mostrarCompras() {
     item.append(
       identificacao,
       saldoAberto,
+      dataCompra,
       primeiroVencimento,
       ultimoVencimento,
       botaoExcluir
@@ -271,6 +326,9 @@ function mostrarCompras() {
 campoValorTotal.addEventListener("input", atualizarPrevia);
 campoQuantidadeParcelas.addEventListener("input", atualizarPrevia);
 campoParcelasPagas.addEventListener("input", atualizarPrevia);
+
+campoDataCompra.addEventListener("input", formatarCampoData);
+campoFormaPagamento.addEventListener("change", atualizarRotuloVencimento);
 
 campoPrimeiroVencimento.addEventListener("input", function (evento) {
   formatarCampoData(evento);
@@ -299,6 +357,8 @@ formulario.addEventListener("submit", function (evento) {
   evento.preventDefault();
 
   const descricao = campoDescricao.value.trim();
+  const dataCompra = converterTextoEmData(campoDataCompra.value);
+  const formaPagamento = campoFormaPagamento.value;
   const valorTotal = Number(campoValorTotal.value);
   const quantidadeParcelas = Number(campoQuantidadeParcelas.value);
   const parcelasPagas = Number(campoParcelasPagas.value);
@@ -308,6 +368,8 @@ formulario.addEventListener("submit", function (evento) {
 
   const dadosValidos =
     descricao !== "" &&
+    dataCompra !== null &&
+    formaPagamento !== "" &&
     valorTotal > 0 &&
     Number.isInteger(quantidadeParcelas) &&
     quantidadeParcelas > 0 &&
@@ -322,6 +384,22 @@ formulario.addEventListener("submit", function (evento) {
     return;
   }
 
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+
+  if (dataCompra > hoje) {
+    mensagemErro.textContent = "A data da compra não pode estar no futuro.";
+    mensagemErro.hidden = false;
+    return;
+  }
+
+  if (primeiroVencimento < dataCompra) {
+    mensagemErro.textContent =
+      "O primeiro vencimento não pode ser anterior à data da compra.";
+    mensagemErro.hidden = false;
+    return;
+  }
+
   const ultimoVencimento = adicionarMeses(
     primeiroVencimento,
     quantidadeParcelas - 1
@@ -330,6 +408,8 @@ formulario.addEventListener("submit", function (evento) {
   const compra = {
     id: Date.now(),
     descricao,
+    dataCompra: campoDataCompra.value,
+    formaPagamento,
     valorTotal,
     quantidadeParcelas,
     parcelasPagas,
@@ -349,6 +429,7 @@ formulario.addEventListener("submit", function (evento) {
   atualizarResumo();
 
   formulario.reset();
+  atualizarRotuloVencimento();
   atualizarPrevia();
   campoDescricao.focus();
 });

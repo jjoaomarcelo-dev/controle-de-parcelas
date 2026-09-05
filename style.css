@@ -167,7 +167,8 @@ a {
     font-size: 0.9rem;
 }
 
-.campo input {
+.campo input,
+.campo select {
     width: 100%;
     min-width: 0;
     padding: 13px 14px;
@@ -175,6 +176,7 @@ a {
     background-color: var(--cor-fundo);
     border: 1px solid var(--cor-borda);
     border-radius: 5px;
+    font: inherit;
     outline: none;
     transition:
         border-color 0.2s,
@@ -185,11 +187,13 @@ a {
     color: #657170;
 }
 
-.campo input:focus {
+.campo input:focus,
+.campo select:focus {
     border-color: var(--cor-destaque);
     box-shadow: 0 0 0 3px rgb(66 184 178 / 12%);
 }
 
+#data-compra:focus::placeholder,
 #primeiro-vencimento:focus::placeholder {
     color: transparent;
 }
@@ -342,8 +346,8 @@ a {
 
 .compra-item {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) repeat(3, auto) auto;
-    gap: 24px;
+    grid-template-columns: minmax(220px, 1.5fr) repeat(4, minmax(130px, 1fr)) 36px;
+    gap: 16px;
     align-items: center;
     padding: 20px;
     background-color: var(--cor-superficie-clara);
@@ -364,11 +368,14 @@ a {
 
 .compra-informacao span {
     display: block;
+    margin-bottom: 4px;
     color: var(--cor-texto-suave);
     font-size: 0.75rem;
+    line-height: 1.3;
 }
 
 .compra-informacao strong {
+    display: block;
     font-size: 0.9rem;
 }
 
@@ -384,6 +391,12 @@ a {
 .botao-excluir:hover {
     background-color: rgb(255 107 107 / 8%);
     border-color: var(--cor-erro);
+}
+
+@media (max-width: 1100px) {
+    .compra-item {
+        grid-template-columns: 1fr 1fr;
+    }
 }
 
 @media (max-width: 800px) {
@@ -403,9 +416,6 @@ a {
         grid-template-columns: 1fr;
     }
 
-    .compra-item {
-        grid-template-columns: 1fr 1fr;
-    }
 }
 
 @media (max-width: 520px) {
