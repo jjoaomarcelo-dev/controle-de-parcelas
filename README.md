@@ -20,4 +20,8 @@ Aplicação para cadastrar e acompanhar compras parceladas.
 
 ## Como executar
 
-Abra o arquivo `index.html` no navegador.
+1. Clone ou baixe este repositório.
+2. Abra a pasta do projeto.
+3. Abra o arquivo `index.html` no navegador.
+
+Não é necessário instalar dependências.
