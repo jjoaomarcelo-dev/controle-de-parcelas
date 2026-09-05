@@ -373,11 +373,27 @@ function criarAgendaParcelas(compra) {
     let acao;
 
     if (parcela.status === "paga") {
-      acao = document.createElement("span");
-      acao.classList.add("parcela-pagamento");
-      acao.textContent = parcela.dataPagamento
+      acao = document.createElement("div");
+      acao.classList.add("parcela-acao");
+
+      const pagamento = document.createElement("span");
+      pagamento.classList.add("parcela-pagamento");
+      pagamento.textContent = parcela.dataPagamento
         ? `Paga em ${parcela.dataPagamento}`
         : "Pagamento informado";
+
+      const botaoDesfazer = document.createElement("button");
+      botaoDesfazer.classList.add("botao-desfazer");
+      botaoDesfazer.type = "button";
+      botaoDesfazer.dataset.compraId = compra.id;
+      botaoDesfazer.dataset.parcelaNumero = parcela.numero;
+      botaoDesfazer.textContent = "Desfazer";
+      botaoDesfazer.setAttribute(
+        "aria-label",
+        `Desfazer pagamento da parcela ${parcela.numero} de ${compra.descricao}`
+      );
+
+      acao.append(pagamento, botaoDesfazer);
     } else {
       acao = document.createElement("button");
       acao.classList.add("botao-pagar");
@@ -498,6 +514,42 @@ listaCompras.addEventListener("click", function (evento) {
 
   salvarCompras();
   mostrarCompras();
+  atualizarResumo();
+});
+
+listaCompras.addEventListener("click", function (evento) {
+  const botaoDesfazer = evento.target.closest(".botao-desfazer");
+
+  if (!botaoDesfazer) {
+    return;
+  }
+
+  const compra = compras.find(function (item) {
+    return item.id === Number(botaoDesfazer.dataset.compraId);
+  });
+
+  if (!compra) {
+    return;
+  }
+
+  const parcela = compra.parcelas.find(function (item) {
+    return item.numero === Number(botaoDesfazer.dataset.parcelaNumero);
+  });
+
+  if (!parcela || parcela.status !== "paga") {
+    return;
+  }
+
+  const vencimento = converterTextoEmData(parcela.vencimento);
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+
+  parcela.status = vencimento && vencimento < hoje ? "atrasada" : "pendente";
+  parcela.dataPagamento = null;
+  atualizarDadosCompra(compra);
+
+  salvarCompras();
+  mostrarCompras(compra.id);
   atualizarResumo();
 });
 

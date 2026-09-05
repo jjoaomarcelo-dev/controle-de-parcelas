@@ -459,10 +459,30 @@ a {
     font-weight: 700;
 }
 
-.parcela-pagamento {
+.parcela-acao {
+    display: flex;
+    align-items: flex-end;
     justify-self: end;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.parcela-pagamento {
     color: var(--cor-texto-suave);
     font-size: 0.75rem;
+}
+
+.botao-desfazer {
+    padding: 0;
+    color: var(--cor-texto-suave);
+    background-color: transparent;
+    border: 0;
+    font-size: 0.75rem;
+    text-decoration: underline;
+}
+
+.botao-desfazer:hover {
+    color: var(--cor-erro);
 }
 
 @media (max-width: 1100px) {
@@ -543,7 +563,11 @@ a {
     }
 
     .botao-pagar,
-    .parcela-pagamento {
+    .parcela-acao {
         justify-self: start;
+    }
+
+    .parcela-acao {
+        align-items: flex-start;
     }
 }
