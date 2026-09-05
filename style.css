@@ -126,6 +126,50 @@ a {
     font-size: 1.5rem;
 }
 
+.resumo-mensal {
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+}
+
+.navegacao-mes {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.navegacao-mes span {
+    margin: 0;
+    text-align: center;
+}
+
+.navegacao-mes button {
+    display: grid;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    place-items: center;
+    color: var(--cor-texto);
+    background-color: transparent;
+    border: 1px solid var(--cor-borda);
+    border-radius: 50%;
+    font-size: 1.1rem;
+}
+
+.navegacao-mes button:hover {
+    color: var(--cor-destaque);
+    border-color: var(--cor-destaque);
+}
+
+.resumo-mensal small {
+    margin-top: 4px;
+    color: var(--cor-texto-suave);
+    font-size: 0.75rem;
+}
+
 .painel {
     display: grid;
     grid-template-columns: minmax(0, 1.1fr) minmax(300px, 0.9fr);

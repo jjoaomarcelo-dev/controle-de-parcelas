@@ -26,6 +26,12 @@ const previaUltimoVencimento = document.querySelector(
 
 const quantidadeCompras = document.querySelector("#quantidade-compras");
 const compromissoMensal = document.querySelector("#compromisso-mensal");
+const mesSelecionado = document.querySelector("#mes-selecionado");
+const quantidadeParcelasMes = document.querySelector(
+  "#quantidade-parcelas-mes"
+);
+const botaoMesAnterior = document.querySelector("#mes-anterior");
+const botaoProximoMes = document.querySelector("#proximo-mes");
 const saldoEmAberto = document.querySelector("#saldo-em-aberto");
 const listaCompras = document.querySelector("#lista-compras");
 const estadoVazio = document.querySelector("#estado-vazio");
@@ -34,6 +40,9 @@ const mensagemErro = document.querySelector("#mensagem-erro");
 const chaveArmazenamento = "controleDeParcelas.compras";
 
 let compras = carregarCompras();
+let mesEmExibicao = new Date();
+mesEmExibicao.setDate(1);
+mesEmExibicao.setHours(0, 0, 0, 0);
 
 function carregarCompras() {
   try {
@@ -300,22 +309,21 @@ function atualizarResumo() {
     return compra.parcelasRestantes > 0;
   });
 
-  const hoje = new Date();
-  const totalDoMes = comprasAtivas.reduce(function (total, compra) {
-    const parcelasDoMes = compra.parcelas.filter(function (parcela) {
+  const parcelasDoMes = comprasAtivas.flatMap(function (compra) {
+    return compra.parcelas.filter(function (parcela) {
       const vencimento = converterTextoEmData(parcela.vencimento);
 
       return (
         parcela.status !== "paga" &&
         vencimento !== null &&
-        vencimento.getMonth() === hoje.getMonth() &&
-        vencimento.getFullYear() === hoje.getFullYear()
+        vencimento.getMonth() === mesEmExibicao.getMonth() &&
+        vencimento.getFullYear() === mesEmExibicao.getFullYear()
       );
     });
+  });
 
-    return total + parcelasDoMes.reduce(function (subtotal, parcela) {
-      return subtotal + parcela.valor;
-    }, 0);
+  const totalDoMes = parcelasDoMes.reduce(function (total, parcela) {
+    return total + parcela.valor;
   }, 0);
 
   const totalEmAberto = comprasAtivas.reduce(function (total, compra) {
@@ -324,6 +332,17 @@ function atualizarResumo() {
 
   quantidadeCompras.textContent = comprasAtivas.length;
   compromissoMensal.textContent = formatarMoeda(totalDoMes);
+  quantidadeParcelasMes.textContent =
+    parcelasDoMes.length === 1
+      ? "1 parcela pendente"
+      : `${parcelasDoMes.length} parcelas pendentes`;
+
+  const nomeDoMes = mesEmExibicao.toLocaleDateString("pt-BR", {
+    month: "long",
+    year: "numeric"
+  });
+  mesSelecionado.textContent =
+    nomeDoMes.charAt(0).toUpperCase() + nomeDoMes.slice(1);
   saldoEmAberto.textContent = formatarMoeda(totalEmAberto);
 }
 
@@ -497,6 +516,16 @@ campoFormaPagamento.addEventListener("change", atualizarRotuloVencimento);
 campoPrimeiroVencimento.addEventListener("input", function (evento) {
   formatarCampoData(evento);
   atualizarPrevia();
+});
+
+botaoMesAnterior.addEventListener("click", function () {
+  mesEmExibicao.setMonth(mesEmExibicao.getMonth() - 1);
+  atualizarResumo();
+});
+
+botaoProximoMes.addEventListener("click", function () {
+  mesEmExibicao.setMonth(mesEmExibicao.getMonth() + 1);
+  atualizarResumo();
 });
 
 listaCompras.addEventListener("click", function (evento) {
