@@ -33,7 +33,7 @@
 
         <section class="resumo" aria-label="Resumo das compras parceladas">
             <article class="resumo-item">
-                <span>Compras cadastradas</span>
+                <span>Compras ativas</span>
                 <strong id="quantidade-compras">0</strong>
             </article>
 
@@ -43,8 +43,8 @@
             </article>
 
             <article class="resumo-item">
-                <span>Total parcelado</span>
-                <strong id="total-parcelado">R$ 0,00</strong>
+                <span>Saldo em aberto</span>
+                <strong id="saldo-em-aberto">R$ 0,00</strong>
             </article>
         </section>
 
@@ -74,7 +74,13 @@
                             step="1" placeholder="Ex.: 12" required>
                     </div>
 
-                    <div class="campo campo-completo">
+                    <div class="campo">
+                        <label for="parcelas-pagas">Parcelas já pagas</label>
+                        <input id="parcelas-pagas" name="parcelasPagas" type="number" min="0" max="120" step="1"
+                            value="0" required>
+                    </div>
+
+                    <div class="campo">
                         <label for="primeiro-vencimento">Primeiro vencimento</label>
                         <input id="primeiro-vencimento" name="primeiroVencimento" type="text" inputmode="numeric"
                             maxlength="10" placeholder="dd/mm/aaaa" autocomplete="off" required>
@@ -106,8 +112,18 @@
                     </div>
 
                     <div>
-                        <dt>Quantidade</dt>
-                        <dd id="previa-quantidade">0 parcelas</dd>
+                        <dt>Parcelas restantes</dt>
+                        <dd id="previa-parcelas-restantes">0 parcelas</dd>
+                    </div>
+
+                    <div>
+                        <dt>Saldo em aberto</dt>
+                        <dd id="previa-saldo-aberto">R$ 0,00</dd>
+                    </div>
+
+                    <div>
+                        <dt>Progresso</dt>
+                        <dd id="previa-progresso">0% pago</dd>
                     </div>
 
                     <div>

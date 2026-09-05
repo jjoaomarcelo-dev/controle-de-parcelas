@@ -2,18 +2,23 @@ const formulario = document.querySelector("#formulario-compra");
 const campoDescricao = document.querySelector("#descricao-compra");
 const campoValorTotal = document.querySelector("#valor-total");
 const campoQuantidadeParcelas = document.querySelector("#quantidade-parcelas");
+const campoParcelasPagas = document.querySelector("#parcelas-pagas");
 const campoPrimeiroVencimento = document.querySelector("#primeiro-vencimento");
 
 const previaValorParcela = document.querySelector("#previa-valor-parcela");
 const previaValorTotal = document.querySelector("#previa-valor-total");
-const previaQuantidade = document.querySelector("#previa-quantidade");
+const previaParcelasRestantes = document.querySelector(
+  "#previa-parcelas-restantes"
+);
+const previaSaldoAberto = document.querySelector("#previa-saldo-aberto");
+const previaProgresso = document.querySelector("#previa-progresso");
 const previaUltimoVencimento = document.querySelector(
   "#previa-ultimo-vencimento"
 );
 
 const quantidadeCompras = document.querySelector("#quantidade-compras");
 const compromissoMensal = document.querySelector("#compromisso-mensal");
-const totalParcelado = document.querySelector("#total-parcelado");
+const saldoEmAberto = document.querySelector("#saldo-em-aberto");
 const listaCompras = document.querySelector("#lista-compras");
 const estadoVazio = document.querySelector("#estado-vazio");
 const mensagemErro = document.querySelector("#mensagem-erro");
@@ -32,7 +37,24 @@ function carregarCompras() {
 
     const dadosConvertidos = JSON.parse(comprasSalvas);
 
-    return Array.isArray(dadosConvertidos) ? dadosConvertidos : [];
+    if (!Array.isArray(dadosConvertidos)) {
+      return [];
+    }
+
+    return dadosConvertidos.map(function (compra) {
+      const parcelasPagas = Number.isInteger(compra.parcelasPagas)
+        ? compra.parcelasPagas
+        : 0;
+      const parcelasRestantes = compra.quantidadeParcelas - parcelasPagas;
+
+      return {
+        ...compra,
+        parcelasPagas,
+        parcelasRestantes,
+        saldoEmAberto:
+          compra.valorTotal * (parcelasRestantes / compra.quantidadeParcelas)
+      };
+    });
   } catch {
     return [];
   }
@@ -105,6 +127,7 @@ function adicionarMeses(dataInicial, quantidadeMeses) {
 function atualizarPrevia() {
   const valorTotal = Number(campoValorTotal.value);
   const quantidadeParcelas = Number(campoQuantidadeParcelas.value);
+  const parcelasPagas = Number(campoParcelasPagas.value);
   const primeiroVencimento = converterTextoEmData(
     campoPrimeiroVencimento.value
   );
@@ -112,24 +135,34 @@ function atualizarPrevia() {
   const dadosValidos =
     valorTotal > 0 &&
     Number.isInteger(quantidadeParcelas) &&
-    quantidadeParcelas > 0;
+    quantidadeParcelas > 0 &&
+    Number.isInteger(parcelasPagas) &&
+    parcelasPagas >= 0 &&
+    parcelasPagas <= quantidadeParcelas;
 
   if (!dadosValidos) {
     previaValorParcela.textContent = formatarMoeda(0);
     previaValorTotal.textContent = formatarMoeda(0);
-    previaQuantidade.textContent = "0 parcelas";
+    previaParcelasRestantes.textContent = "0 parcelas";
+    previaSaldoAberto.textContent = formatarMoeda(0);
+    previaProgresso.textContent = "0% pago";
     previaUltimoVencimento.textContent = "\u2014";
     return;
   }
 
   const valorParcela = valorTotal / quantidadeParcelas;
+  const parcelasRestantes = quantidadeParcelas - parcelasPagas;
+  const saldoAberto = valorTotal * (parcelasRestantes / quantidadeParcelas);
+  const progresso = (parcelasPagas / quantidadeParcelas) * 100;
 
   previaValorParcela.textContent = formatarMoeda(valorParcela);
   previaValorTotal.textContent = formatarMoeda(valorTotal);
-  previaQuantidade.textContent =
-    quantidadeParcelas === 1
+  previaParcelasRestantes.textContent =
+    parcelasRestantes === 1
       ? "1 parcela"
-      : `${quantidadeParcelas} parcelas`;
+      : `${parcelasRestantes} parcelas`;
+  previaSaldoAberto.textContent = formatarMoeda(saldoAberto);
+  previaProgresso.textContent = `${progresso.toFixed(0)}% pago`;
 
   if (primeiroVencimento) {
     const ultimoVencimento = adicionarMeses(
@@ -145,17 +178,21 @@ function atualizarPrevia() {
 }
 
 function atualizarResumo() {
-  const totalDasCompras = compras.reduce(function (total, compra) {
-    return total + compra.valorTotal;
-  }, 0);
+  const comprasAtivas = compras.filter(function (compra) {
+    return compra.parcelasRestantes > 0;
+  });
 
-  const totalDasParcelas = compras.reduce(function (total, compra) {
+  const totalDasParcelas = comprasAtivas.reduce(function (total, compra) {
     return total + compra.valorParcela;
   }, 0);
 
-  quantidadeCompras.textContent = compras.length;
+  const totalEmAberto = comprasAtivas.reduce(function (total, compra) {
+    return total + compra.saldoEmAberto;
+  }, 0);
+
+  quantidadeCompras.textContent = comprasAtivas.length;
   compromissoMensal.textContent = formatarMoeda(totalDasParcelas);
-  totalParcelado.textContent = formatarMoeda(totalDasCompras);
+  saldoEmAberto.textContent = formatarMoeda(totalEmAberto);
 }
 
 function criarInformacaoCompra(rotulo, valor) {
@@ -189,13 +226,13 @@ function mostrarCompras() {
 
     titulo.textContent = compra.descricao;
     descricaoParcelas.textContent =
-      `${compra.quantidadeParcelas}x de ${formatarMoeda(compra.valorParcela)}`;
+      `${compra.parcelasPagas} de ${compra.quantidadeParcelas} parcelas pagas`;
 
     identificacao.append(titulo, descricaoParcelas);
 
-    const valorTotal = criarInformacaoCompra(
-      "Valor total",
-      formatarMoeda(compra.valorTotal)
+    const saldoAberto = criarInformacaoCompra(
+      "Saldo em aberto",
+      formatarMoeda(compra.saldoEmAberto)
     );
     const primeiroVencimento = criarInformacaoCompra(
       "Primeiro vencimento",
@@ -219,7 +256,7 @@ function mostrarCompras() {
 
     item.append(
       identificacao,
-      valorTotal,
+      saldoAberto,
       primeiroVencimento,
       ultimoVencimento,
       botaoExcluir
@@ -233,6 +270,7 @@ function mostrarCompras() {
 
 campoValorTotal.addEventListener("input", atualizarPrevia);
 campoQuantidadeParcelas.addEventListener("input", atualizarPrevia);
+campoParcelasPagas.addEventListener("input", atualizarPrevia);
 
 campoPrimeiroVencimento.addEventListener("input", function (evento) {
   formatarCampoData(evento);
@@ -263,6 +301,7 @@ formulario.addEventListener("submit", function (evento) {
   const descricao = campoDescricao.value.trim();
   const valorTotal = Number(campoValorTotal.value);
   const quantidadeParcelas = Number(campoQuantidadeParcelas.value);
+  const parcelasPagas = Number(campoParcelasPagas.value);
   const primeiroVencimento = converterTextoEmData(
     campoPrimeiroVencimento.value
   );
@@ -272,20 +311,13 @@ formulario.addEventListener("submit", function (evento) {
     valorTotal > 0 &&
     Number.isInteger(quantidadeParcelas) &&
     quantidadeParcelas > 0 &&
+    Number.isInteger(parcelasPagas) &&
+    parcelasPagas >= 0 &&
+    parcelasPagas <= quantidadeParcelas &&
     primeiroVencimento !== null;
 
   if (!dadosValidos) {
     mensagemErro.textContent = "Preencha todos os campos corretamente.";
-    mensagemErro.hidden = false;
-    return;
-  }
-
-  const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0);
-
-  if (primeiroVencimento < hoje) {
-    mensagemErro.textContent =
-      "O primeiro vencimento não pode estar no passado.";
     mensagemErro.hidden = false;
     return;
   }
@@ -300,7 +332,11 @@ formulario.addEventListener("submit", function (evento) {
     descricao,
     valorTotal,
     quantidadeParcelas,
+    parcelasPagas,
+    parcelasRestantes: quantidadeParcelas - parcelasPagas,
     valorParcela: valorTotal / quantidadeParcelas,
+    saldoEmAberto:
+      valorTotal * ((quantidadeParcelas - parcelasPagas) / quantidadeParcelas),
     primeiroVencimento: campoPrimeiroVencimento.value,
     ultimoVencimento: ultimoVencimento.toLocaleDateString("pt-BR")
   };
