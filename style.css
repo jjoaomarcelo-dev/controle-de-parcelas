@@ -393,6 +393,61 @@ a {
     border-color: var(--cor-erro);
 }
 
+.agenda-parcelas {
+    grid-column: 1 / -1;
+    padding-top: 16px;
+    border-top: 1px solid var(--cor-borda);
+}
+
+.agenda-parcelas summary {
+    width: fit-content;
+    color: var(--cor-destaque);
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.parcelas-lista {
+    display: grid;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.parcela-item {
+    display: grid;
+    grid-template-columns: minmax(120px, 1fr) repeat(3, minmax(100px, 0.7fr));
+    gap: 16px;
+    align-items: center;
+    padding: 12px 14px;
+    background-color: var(--cor-fundo);
+    border: 1px solid var(--cor-borda);
+    border-radius: 5px;
+    font-size: 0.85rem;
+}
+
+.parcela-status {
+    justify-self: end;
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.status-paga {
+    color: var(--cor-destaque);
+    background-color: rgb(66 184 178 / 10%);
+}
+
+.status-pendente {
+    color: var(--cor-texto-suave);
+    background-color: rgb(152 163 162 / 10%);
+}
+
+.status-atrasada {
+    color: var(--cor-erro);
+    background-color: rgb(255 107 107 / 10%);
+}
+
 @media (max-width: 1100px) {
     .compra-item {
         grid-template-columns: 1fr 1fr;
@@ -460,5 +515,13 @@ a {
     .compra-item {
         grid-template-columns: 1fr;
         gap: 16px;
+    }
+
+    .parcela-item {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .parcela-status {
+        justify-self: start;
     }
 }

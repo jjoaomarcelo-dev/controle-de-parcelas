@@ -55,13 +55,23 @@ function carregarCompras() {
         : 0;
       const parcelasRestantes = compra.quantidadeParcelas - parcelasPagas;
 
-      return {
+      const compraAtualizada = {
         ...compra,
         parcelasPagas,
         parcelasRestantes,
         saldoEmAberto:
           compra.valorTotal * (parcelasRestantes / compra.quantidadeParcelas)
       };
+
+      compraAtualizada.parcelas = gerarParcelas(compraAtualizada);
+      compraAtualizada.saldoEmAberto = compraAtualizada.parcelas.reduce(
+        function (total, parcela) {
+          return parcela.status === "paga" ? total : total + parcela.valor;
+        },
+        0
+      );
+
+      return compraAtualizada;
     });
   } catch {
     return [];
@@ -130,6 +140,48 @@ function adicionarMeses(dataInicial, quantidadeMeses) {
   novaData.setDate(Math.min(diaOriginal, ultimoDiaDoMes));
 
   return novaData;
+}
+
+function gerarParcelas(compra) {
+  const primeiroVencimento = converterTextoEmData(compra.primeiroVencimento);
+
+  if (!primeiroVencimento) {
+    return [];
+  }
+
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+
+  const valorTotalEmCentavos = Math.round(compra.valorTotal * 100);
+  const valorBaseEmCentavos = Math.floor(
+    valorTotalEmCentavos / compra.quantidadeParcelas
+  );
+  const centavosRestantes =
+    valorTotalEmCentavos % compra.quantidadeParcelas;
+
+  return Array.from(
+    { length: compra.quantidadeParcelas },
+    function (_, indice) {
+      const vencimento = adicionarMeses(primeiroVencimento, indice);
+      const valorEmCentavos =
+        valorBaseEmCentavos + (indice < centavosRestantes ? 1 : 0);
+
+      let status = "pendente";
+
+      if (indice < compra.parcelasPagas) {
+        status = "paga";
+      } else if (vencimento < hoje) {
+        status = "atrasada";
+      }
+
+      return {
+        numero: indice + 1,
+        valor: valorEmCentavos / 100,
+        vencimento: vencimento.toLocaleDateString("pt-BR"),
+        status
+      };
+    }
+  );
 }
 
 function obterRotuloVencimento(formaPagamento) {
@@ -259,6 +311,43 @@ function criarInformacaoCompra(rotulo, valor) {
   return informacao;
 }
 
+function criarAgendaParcelas(compra) {
+  const detalhes = document.createElement("details");
+  detalhes.classList.add("agenda-parcelas");
+
+  const titulo = document.createElement("summary");
+  titulo.textContent = "Ver parcelas";
+
+  const lista = document.createElement("div");
+  lista.classList.add("parcelas-lista");
+
+  compra.parcelas.forEach(function (parcela) {
+    const item = document.createElement("div");
+    item.classList.add("parcela-item");
+
+    const numero = document.createElement("strong");
+    numero.textContent = `Parcela ${parcela.numero}/${compra.quantidadeParcelas}`;
+
+    const vencimento = document.createElement("span");
+    vencimento.textContent = parcela.vencimento;
+
+    const valor = document.createElement("span");
+    valor.textContent = formatarMoeda(parcela.valor);
+
+    const status = document.createElement("span");
+    status.classList.add("parcela-status", `status-${parcela.status}`);
+    status.textContent =
+      parcela.status.charAt(0).toUpperCase() + parcela.status.slice(1);
+
+    item.append(numero, vencimento, valor, status);
+    lista.append(item);
+  });
+
+  detalhes.append(titulo, lista);
+
+  return detalhes;
+}
+
 function mostrarCompras() {
   if (compras.length === 0) {
     listaCompras.replaceChildren(estadoVazio);
@@ -308,13 +397,16 @@ function mostrarCompras() {
       `Excluir compra ${compra.descricao}`
     );
 
+    const agendaParcelas = criarAgendaParcelas(compra);
+
     item.append(
       identificacao,
       saldoAberto,
       dataCompra,
       primeiroVencimento,
       ultimoVencimento,
-      botaoExcluir
+      botaoExcluir,
+      agendaParcelas
     );
 
     return item;
@@ -420,6 +512,14 @@ formulario.addEventListener("submit", function (evento) {
     primeiroVencimento: campoPrimeiroVencimento.value,
     ultimoVencimento: ultimoVencimento.toLocaleDateString("pt-BR")
   };
+
+  compra.parcelas = gerarParcelas(compra);
+  compra.saldoEmAberto = compra.parcelas.reduce(
+    function (total, parcela) {
+      return parcela.status === "paga" ? total : total + parcela.valor;
+    },
+    0
+  );
 
   compras.push(compra);
   salvarCompras();
