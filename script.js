@@ -64,12 +64,7 @@ function carregarCompras() {
       };
 
       compraAtualizada.parcelas = gerarParcelas(compraAtualizada);
-      compraAtualizada.saldoEmAberto = compraAtualizada.parcelas.reduce(
-        function (total, parcela) {
-          return parcela.status === "paga" ? total : total + parcela.valor;
-        },
-        0
-      );
+      atualizarDadosCompra(compraAtualizada);
 
       return compraAtualizada;
     });
@@ -144,6 +139,8 @@ function adicionarMeses(dataInicial, quantidadeMeses) {
 
 function gerarParcelas(compra) {
   const primeiroVencimento = converterTextoEmData(compra.primeiroVencimento);
+  const temParcelasSalvas =
+    Array.isArray(compra.parcelas) && compra.parcelas.length > 0;
 
   if (!primeiroVencimento) {
     return [];
@@ -162,13 +159,21 @@ function gerarParcelas(compra) {
   return Array.from(
     { length: compra.quantidadeParcelas },
     function (_, indice) {
+      const parcelaAnterior = Array.isArray(compra.parcelas)
+        ? compra.parcelas.find(function (parcela) {
+          return parcela.numero === indice + 1;
+        })
+        : null;
       const vencimento = adicionarMeses(primeiroVencimento, indice);
       const valorEmCentavos =
         valorBaseEmCentavos + (indice < centavosRestantes ? 1 : 0);
 
       let status = "pendente";
 
-      if (indice < compra.parcelasPagas) {
+      if (
+        parcelaAnterior?.status === "paga" ||
+        (!temParcelasSalvas && indice < compra.parcelasPagas)
+      ) {
         status = "paga";
       } else if (vencimento < hoje) {
         status = "atrasada";
@@ -178,10 +183,22 @@ function gerarParcelas(compra) {
         numero: indice + 1,
         valor: valorEmCentavos / 100,
         vencimento: vencimento.toLocaleDateString("pt-BR"),
-        status
+        status,
+        dataPagamento: parcelaAnterior?.dataPagamento || null
       };
     }
   );
+}
+
+function atualizarDadosCompra(compra) {
+  compra.parcelasPagas = compra.parcelas.filter(function (parcela) {
+    return parcela.status === "paga";
+  }).length;
+  compra.parcelasRestantes =
+    compra.quantidadeParcelas - compra.parcelasPagas;
+  compra.saldoEmAberto = compra.parcelas.reduce(function (total, parcela) {
+    return parcela.status === "paga" ? total : total + parcela.valor;
+  }, 0);
 }
 
 function obterRotuloVencimento(formaPagamento) {
@@ -283,8 +300,22 @@ function atualizarResumo() {
     return compra.parcelasRestantes > 0;
   });
 
-  const totalDasParcelas = comprasAtivas.reduce(function (total, compra) {
-    return total + compra.valorParcela;
+  const hoje = new Date();
+  const totalDoMes = comprasAtivas.reduce(function (total, compra) {
+    const parcelasDoMes = compra.parcelas.filter(function (parcela) {
+      const vencimento = converterTextoEmData(parcela.vencimento);
+
+      return (
+        parcela.status !== "paga" &&
+        vencimento !== null &&
+        vencimento.getMonth() === hoje.getMonth() &&
+        vencimento.getFullYear() === hoje.getFullYear()
+      );
+    });
+
+    return total + parcelasDoMes.reduce(function (subtotal, parcela) {
+      return subtotal + parcela.valor;
+    }, 0);
   }, 0);
 
   const totalEmAberto = comprasAtivas.reduce(function (total, compra) {
@@ -292,7 +323,7 @@ function atualizarResumo() {
   }, 0);
 
   quantidadeCompras.textContent = comprasAtivas.length;
-  compromissoMensal.textContent = formatarMoeda(totalDasParcelas);
+  compromissoMensal.textContent = formatarMoeda(totalDoMes);
   saldoEmAberto.textContent = formatarMoeda(totalEmAberto);
 }
 
@@ -339,7 +370,28 @@ function criarAgendaParcelas(compra) {
     status.textContent =
       parcela.status.charAt(0).toUpperCase() + parcela.status.slice(1);
 
-    item.append(numero, vencimento, valor, status);
+    let acao;
+
+    if (parcela.status === "paga") {
+      acao = document.createElement("span");
+      acao.classList.add("parcela-pagamento");
+      acao.textContent = parcela.dataPagamento
+        ? `Paga em ${parcela.dataPagamento}`
+        : "Pagamento informado";
+    } else {
+      acao = document.createElement("button");
+      acao.classList.add("botao-pagar");
+      acao.type = "button";
+      acao.dataset.compraId = compra.id;
+      acao.dataset.parcelaNumero = parcela.numero;
+      acao.textContent = "Marcar como paga";
+      acao.setAttribute(
+        "aria-label",
+        `Marcar parcela ${parcela.numero} de ${compra.descricao} como paga`
+      );
+    }
+
+    item.append(numero, vencimento, valor, status, acao);
     lista.append(item);
   });
 
@@ -348,7 +400,7 @@ function criarAgendaParcelas(compra) {
   return detalhes;
 }
 
-function mostrarCompras() {
+function mostrarCompras(compraAbertaId = null) {
   if (compras.length === 0) {
     listaCompras.replaceChildren(estadoVazio);
     return;
@@ -399,6 +451,10 @@ function mostrarCompras() {
 
     const agendaParcelas = criarAgendaParcelas(compra);
 
+    if (compra.id === compraAbertaId) {
+      agendaParcelas.open = true;
+    }
+
     item.append(
       identificacao,
       saldoAberto,
@@ -442,6 +498,38 @@ listaCompras.addEventListener("click", function (evento) {
 
   salvarCompras();
   mostrarCompras();
+  atualizarResumo();
+});
+
+listaCompras.addEventListener("click", function (evento) {
+  const botaoPagar = evento.target.closest(".botao-pagar");
+
+  if (!botaoPagar) {
+    return;
+  }
+
+  const compra = compras.find(function (item) {
+    return item.id === Number(botaoPagar.dataset.compraId);
+  });
+
+  if (!compra) {
+    return;
+  }
+
+  const parcela = compra.parcelas.find(function (item) {
+    return item.numero === Number(botaoPagar.dataset.parcelaNumero);
+  });
+
+  if (!parcela || parcela.status === "paga") {
+    return;
+  }
+
+  parcela.status = "paga";
+  parcela.dataPagamento = new Date().toLocaleDateString("pt-BR");
+  atualizarDadosCompra(compra);
+
+  salvarCompras();
+  mostrarCompras(compra.id);
   atualizarResumo();
 });
 
@@ -514,12 +602,7 @@ formulario.addEventListener("submit", function (evento) {
   };
 
   compra.parcelas = gerarParcelas(compra);
-  compra.saldoEmAberto = compra.parcelas.reduce(
-    function (total, parcela) {
-      return parcela.status === "paga" ? total : total + parcela.valor;
-    },
-    0
-  );
+  atualizarDadosCompra(compra);
 
   compras.push(compra);
   salvarCompras();

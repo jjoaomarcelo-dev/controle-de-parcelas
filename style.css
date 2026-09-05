@@ -415,7 +415,7 @@ a {
 
 .parcela-item {
     display: grid;
-    grid-template-columns: minmax(120px, 1fr) repeat(3, minmax(100px, 0.7fr));
+    grid-template-columns: minmax(120px, 1fr) repeat(3, minmax(100px, 0.7fr)) minmax(135px, auto);
     gap: 16px;
     align-items: center;
     padding: 12px 14px;
@@ -446,6 +446,23 @@ a {
 .status-atrasada {
     color: var(--cor-erro);
     background-color: rgb(255 107 107 / 10%);
+}
+
+.botao-pagar {
+    justify-self: end;
+    padding: 7px 10px;
+    color: var(--cor-fundo);
+    background-color: var(--cor-destaque);
+    border: 0;
+    border-radius: 5px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.parcela-pagamento {
+    justify-self: end;
+    color: var(--cor-texto-suave);
+    font-size: 0.75rem;
 }
 
 @media (max-width: 1100px) {
@@ -522,6 +539,11 @@ a {
     }
 
     .parcela-status {
+        justify-self: start;
+    }
+
+    .botao-pagar,
+    .parcela-pagamento {
         justify-self: start;
     }
 }
