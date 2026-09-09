@@ -8,6 +8,7 @@
     --cor-laranja: #f36b24;
     --cor-borda: #243031;
     --cor-erro: #ff6b6b;
+    --cor-texto-botao: #090d0e;
 }
 
 * {
@@ -25,6 +26,15 @@ body {
     background-color: var(--cor-fundo);
     font-family: Arial, Helvetica, sans-serif;
     line-height: 1.5;
+}
+
+body.tema-claro {
+    --cor-fundo: #f5f3ed;
+    --cor-superficie: #ffffff;
+    --cor-superficie-clara: #eef2f1;
+    --cor-texto: #152021;
+    --cor-texto-suave: #586665;
+    --cor-borda: #d6dddc;
 }
 
 button,
@@ -195,6 +205,45 @@ a {
     font-size: 0.75rem;
 }
 
+.acoes-cabecalho {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.controle-tema {
+    display: flex;
+    min-width: 72px;
+    align-items: center;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.botao-tema {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    place-items: center;
+    color: var(--cor-laranja);
+    background-color: transparent;
+    border: 1px solid var(--cor-borda);
+    border-radius: 50%;
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+.botao-tema:hover {
+    background-color: var(--cor-superficie);
+    border-color: var(--cor-destaque);
+}
+
+.rotulo-tema {
+    color: var(--cor-texto-suave);
+    font-size: 0.6rem;
+    line-height: 1;
+}
+
 .painel {
     display: grid;
     grid-template-columns: minmax(0, 1.1fr) minmax(300px, 0.9fr);
@@ -282,7 +331,7 @@ a {
     grid-column: 1 / -1;
     width: 100%;
     padding: 13px 18px;
-    color: var(--cor-fundo);
+    color: var(--cor-texto-botao);
     background-color: var(--cor-destaque);
     border: 0;
     border-radius: 5px;
@@ -520,7 +569,7 @@ a {
 .botao-pagar {
     justify-self: end;
     padding: 7px 10px;
-    color: var(--cor-fundo);
+    color: var(--cor-texto-botao);
     background-color: var(--cor-destaque);
     border: 0;
     border-radius: 5px;

@@ -36,13 +36,47 @@ const saldoEmAberto = document.querySelector("#saldo-em-aberto");
 const listaCompras = document.querySelector("#lista-compras");
 const estadoVazio = document.querySelector("#estado-vazio");
 const mensagemErro = document.querySelector("#mensagem-erro");
+const botaoTema = document.querySelector("#botao-tema");
+const rotuloTema = document.querySelector("#rotulo-tema");
+const iconeTema = botaoTema.querySelector("span");
 
 const chaveArmazenamento = "controleDeParcelas.compras";
+const chaveTema = "capiva.tema";
 
 let compras = carregarCompras();
 let mesEmExibicao = new Date();
 mesEmExibicao.setDate(1);
 mesEmExibicao.setHours(0, 0, 0, 0);
+
+function carregarTema() {
+  try {
+    return localStorage.getItem(chaveTema) || "escuro";
+  } catch {
+    return "escuro";
+  }
+}
+
+function salvarTema(tema) {
+  try {
+    localStorage.setItem(chaveTema, tema);
+  } catch {
+    // O tema continua funcionando durante o uso da página.
+  }
+}
+
+function aplicarTema(tema) {
+  const temaClaroAtivo = tema === "claro";
+
+  document.body.classList.toggle("tema-claro", temaClaroAtivo);
+  iconeTema.textContent = temaClaroAtivo ? "☾" : "☀";
+  rotuloTema.textContent = temaClaroAtivo ? "Modo escuro" : "Modo claro";
+
+  const proximoTema = temaClaroAtivo ? "escuro" : "claro";
+  botaoTema.setAttribute("aria-label", `Ativar modo ${proximoTema}`);
+  botaoTema.setAttribute("title", `Ativar modo ${proximoTema}`);
+}
+
+aplicarTema(carregarTema());
 
 function carregarCompras() {
   try {
@@ -512,6 +546,15 @@ campoParcelasPagas.addEventListener("input", atualizarPrevia);
 
 campoDataCompra.addEventListener("input", formatarCampoData);
 campoFormaPagamento.addEventListener("change", atualizarRotuloVencimento);
+
+botaoTema.addEventListener("click", function () {
+  const novoTema = document.body.classList.contains("tema-claro")
+    ? "escuro"
+    : "claro";
+
+  aplicarTema(novoTema);
+  salvarTema(novoTema);
+});
 
 campoPrimeiroVencimento.addEventListener("input", function (evento) {
   formatarCampoData(evento);
