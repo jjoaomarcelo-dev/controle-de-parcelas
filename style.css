@@ -53,10 +53,35 @@ a {
 }
 
 .marca {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     color: var(--cor-destaque);
-    font-size: 1.35rem;
-    font-weight: 700;
     text-decoration: none;
+}
+
+.marca-logo {
+    display: block;
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+}
+
+.marca-texto {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.marca-texto strong {
+    font-size: 1.2rem;
+}
+
+.marca-texto small {
+    margin-top: 3px;
+    color: var(--cor-texto-suave);
+    font-size: 0.72rem;
+    font-weight: 400;
 }
 
 .tecnologia {
@@ -560,7 +585,16 @@ a {
     }
 
     .marca {
-        font-size: 1.1rem;
+        gap: 8px;
+    }
+
+    .marca-logo {
+        width: 38px;
+        height: 38px;
+    }
+
+    .marca-texto strong {
+        font-size: 1.05rem;
     }
 
     .tecnologia {
