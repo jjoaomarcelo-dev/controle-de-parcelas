@@ -7,6 +7,7 @@
     --cor-destaque: #42b8b2;
     --cor-laranja: #f36b24;
     --cor-borda: #243031;
+    --cor-borda-controle: #526162;
     --cor-erro: #ff6b6b;
     --cor-texto-botao: #090d0e;
 }
@@ -34,7 +35,11 @@ body.tema-claro {
     --cor-superficie-clara: #eef2f1;
     --cor-texto: #152021;
     --cor-texto-suave: #586665;
+    --cor-destaque: #167a76;
+    --cor-laranja: #b9470e;
     --cor-borda: #d6dddc;
+    --cor-borda-controle: #71817f;
+    --cor-texto-botao: #ffffff;
 }
 
 button,
@@ -189,7 +194,7 @@ a {
     place-items: center;
     color: var(--cor-texto);
     background-color: transparent;
-    border: 1px solid var(--cor-borda);
+    border: 1px solid var(--cor-borda-controle);
     border-radius: 50%;
     font-size: 1.1rem;
 }
@@ -227,7 +232,7 @@ a {
     place-items: center;
     color: var(--cor-laranja);
     background-color: transparent;
-    border: 1px solid var(--cor-borda);
+    border: 1px solid var(--cor-borda-controle);
     border-radius: 50%;
     font-size: 1.1rem;
     line-height: 1;
@@ -292,7 +297,7 @@ a {
     padding: 13px 14px;
     color: var(--cor-texto);
     background-color: var(--cor-fundo);
-    border: 1px solid var(--cor-borda);
+    border: 1px solid var(--cor-borda-controle);
     border-radius: 5px;
     font: inherit;
     outline: none;
@@ -431,7 +436,7 @@ a {
     padding: 10px 14px;
     color: var(--cor-texto-suave);
     background-color: transparent;
-    border: 1px solid var(--cor-borda);
+    border: 1px solid var(--cor-borda-controle);
     border-radius: 5px;
 }
 
@@ -502,7 +507,7 @@ a {
     height: 36px;
     color: var(--cor-erro);
     background-color: transparent;
-    border: 1px solid var(--cor-borda);
+    border: 1px solid var(--cor-borda-controle);
     border-radius: 5px;
 }
 
