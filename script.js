@@ -571,15 +571,7 @@ botaoProximoMes.addEventListener("click", () => {
   atualizarResumo();
 });
 
-listaCompras.addEventListener("click", (evento) => {
-  const botaoExcluir = evento.target.closest(".botao-excluir");
-
-  if (!botaoExcluir) {
-    return;
-  }
-
-  const idDaCompra = Number(botaoExcluir.dataset.id);
-
+const excluirCompra = (idDaCompra) => {
   compras = compras.filter((compra) => {
     return compra.id !== idDaCompra;
   });
@@ -587,26 +579,26 @@ listaCompras.addEventListener("click", (evento) => {
   salvarCompras();
   mostrarCompras();
   atualizarResumo();
-});
+};
 
-listaCompras.addEventListener("click", (evento) => {
-  const botaoDesfazer = evento.target.closest(".botao-desfazer");
-
-  if (!botaoDesfazer) {
-    return;
-  }
-
+const encontrarParcela = (compraId, parcelaNumero) => {
   const compra = compras.find((item) => {
-    return item.id === Number(botaoDesfazer.dataset.compraId);
+    return item.id === compraId;
   });
 
   if (!compra) {
-    return;
+    return {};
   }
 
   const parcela = compra.parcelas.find((item) => {
-    return item.numero === Number(botaoDesfazer.dataset.parcelaNumero);
+    return item.numero === parcelaNumero;
   });
+
+  return { compra, parcela };
+};
+
+const desfazerPagamento = (compraId, parcelaNumero) => {
+  const { compra, parcela } = encontrarParcela(compraId, parcelaNumero);
 
   if (!parcela || parcela.status !== "paga") {
     return;
@@ -623,26 +615,10 @@ listaCompras.addEventListener("click", (evento) => {
   salvarCompras();
   mostrarCompras(compra.id);
   atualizarResumo();
-});
+};
 
-listaCompras.addEventListener("click", (evento) => {
-  const botaoPagar = evento.target.closest(".botao-pagar");
-
-  if (!botaoPagar) {
-    return;
-  }
-
-  const compra = compras.find((item) => {
-    return item.id === Number(botaoPagar.dataset.compraId);
-  });
-
-  if (!compra) {
-    return;
-  }
-
-  const parcela = compra.parcelas.find((item) => {
-    return item.numero === Number(botaoPagar.dataset.parcelaNumero);
-  });
+const pagarParcela = (compraId, parcelaNumero) => {
+  const { compra, parcela } = encontrarParcela(compraId, parcelaNumero);
 
   if (!parcela || parcela.status === "paga") {
     return;
@@ -655,7 +631,35 @@ listaCompras.addEventListener("click", (evento) => {
   salvarCompras();
   mostrarCompras(compra.id);
   atualizarResumo();
-});
+};
+
+const tratarCliqueNaLista = (evento) => {
+  const botaoExcluir = evento.target.closest(".botao-excluir");
+  const botaoDesfazer = evento.target.closest(".botao-desfazer");
+  const botaoPagar = evento.target.closest(".botao-pagar");
+
+  if (botaoExcluir) {
+    excluirCompra(Number(botaoExcluir.dataset.id));
+    return;
+  }
+
+  if (botaoDesfazer) {
+    desfazerPagamento(
+      Number(botaoDesfazer.dataset.compraId),
+      Number(botaoDesfazer.dataset.parcelaNumero)
+    );
+    return;
+  }
+
+  if (botaoPagar) {
+    pagarParcela(
+      Number(botaoPagar.dataset.compraId),
+      Number(botaoPagar.dataset.parcelaNumero)
+    );
+  }
+};
+
+listaCompras.addEventListener("click", tratarCliqueNaLista);
 
 formulario.addEventListener("submit", (evento) => {
   evento.preventDefault();
