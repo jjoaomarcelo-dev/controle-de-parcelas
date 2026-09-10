@@ -92,7 +92,7 @@ function carregarCompras() {
       return [];
     }
 
-    return dadosConvertidos.map(function (compra) {
+    return dadosConvertidos.map((compra) => {
       const parcelasPagas = Number.isInteger(compra.parcelasPagas)
         ? compra.parcelasPagas
         : 0;
@@ -201,9 +201,9 @@ function gerarParcelas(compra) {
 
   return Array.from(
     { length: compra.quantidadeParcelas },
-    function (_, indice) {
+    (_, indice) => {
       const parcelaAnterior = Array.isArray(compra.parcelas)
-        ? compra.parcelas.find(function (parcela) {
+        ? compra.parcelas.find((parcela) => {
           return parcela.numero === indice + 1;
         })
         : null;
@@ -234,12 +234,12 @@ function gerarParcelas(compra) {
 }
 
 function atualizarDadosCompra(compra) {
-  compra.parcelasPagas = compra.parcelas.filter(function (parcela) {
+  compra.parcelasPagas = compra.parcelas.filter((parcela) => {
     return parcela.status === "paga";
   }).length;
   compra.parcelasRestantes =
     compra.quantidadeParcelas - compra.parcelasPagas;
-  compra.saldoEmAberto = compra.parcelas.reduce(function (total, parcela) {
+  compra.saldoEmAberto = compra.parcelas.reduce((total, parcela) => {
     return parcela.status === "paga" ? total : total + parcela.valor;
   }, 0);
 }
@@ -339,12 +339,12 @@ function atualizarPrevia() {
 }
 
 function atualizarResumo() {
-  const comprasAtivas = compras.filter(function (compra) {
+  const comprasAtivas = compras.filter((compra) => {
     return compra.parcelasRestantes > 0;
   });
 
-  const parcelasDoMes = comprasAtivas.flatMap(function (compra) {
-    return compra.parcelas.filter(function (parcela) {
+  const parcelasDoMes = comprasAtivas.flatMap((compra) => {
+    return compra.parcelas.filter((parcela) => {
       const vencimento = converterTextoEmData(parcela.vencimento);
 
       return (
@@ -356,11 +356,11 @@ function atualizarResumo() {
     });
   });
 
-  const totalDoMes = parcelasDoMes.reduce(function (total, parcela) {
+  const totalDoMes = parcelasDoMes.reduce((total, parcela) => {
     return total + parcela.valor;
   }, 0);
 
-  const totalEmAberto = comprasAtivas.reduce(function (total, compra) {
+  const totalEmAberto = comprasAtivas.reduce((total, compra) => {
     return total + compra.saldoEmAberto;
   }, 0);
 
@@ -405,7 +405,7 @@ function criarAgendaParcelas(compra) {
   const lista = document.createElement("div");
   lista.classList.add("parcelas-lista");
 
-  compra.parcelas.forEach(function (parcela) {
+  compra.parcelas.forEach((parcela) => {
     const item = document.createElement("div");
     item.classList.add("parcela-item");
 
@@ -475,7 +475,7 @@ function mostrarCompras(compraAbertaId = null) {
     return;
   }
 
-  const itens = compras.map(function (compra) {
+  const itens = compras.map((compra) => {
     const item = document.createElement("article");
     item.classList.add("compra-item");
 
@@ -547,7 +547,7 @@ campoParcelasPagas.addEventListener("input", atualizarPrevia);
 campoDataCompra.addEventListener("input", formatarCampoData);
 campoFormaPagamento.addEventListener("change", atualizarRotuloVencimento);
 
-botaoTema.addEventListener("click", function () {
+botaoTema.addEventListener("click", () => {
   const novoTema = document.body.classList.contains("tema-claro")
     ? "escuro"
     : "claro";
@@ -556,22 +556,22 @@ botaoTema.addEventListener("click", function () {
   salvarTema(novoTema);
 });
 
-campoPrimeiroVencimento.addEventListener("input", function (evento) {
+campoPrimeiroVencimento.addEventListener("input", (evento) => {
   formatarCampoData(evento);
   atualizarPrevia();
 });
 
-botaoMesAnterior.addEventListener("click", function () {
+botaoMesAnterior.addEventListener("click", () => {
   mesEmExibicao.setMonth(mesEmExibicao.getMonth() - 1);
   atualizarResumo();
 });
 
-botaoProximoMes.addEventListener("click", function () {
+botaoProximoMes.addEventListener("click", () => {
   mesEmExibicao.setMonth(mesEmExibicao.getMonth() + 1);
   atualizarResumo();
 });
 
-listaCompras.addEventListener("click", function (evento) {
+listaCompras.addEventListener("click", (evento) => {
   const botaoExcluir = evento.target.closest(".botao-excluir");
 
   if (!botaoExcluir) {
@@ -580,7 +580,7 @@ listaCompras.addEventListener("click", function (evento) {
 
   const idDaCompra = Number(botaoExcluir.dataset.id);
 
-  compras = compras.filter(function (compra) {
+  compras = compras.filter((compra) => {
     return compra.id !== idDaCompra;
   });
 
@@ -589,14 +589,14 @@ listaCompras.addEventListener("click", function (evento) {
   atualizarResumo();
 });
 
-listaCompras.addEventListener("click", function (evento) {
+listaCompras.addEventListener("click", (evento) => {
   const botaoDesfazer = evento.target.closest(".botao-desfazer");
 
   if (!botaoDesfazer) {
     return;
   }
 
-  const compra = compras.find(function (item) {
+  const compra = compras.find((item) => {
     return item.id === Number(botaoDesfazer.dataset.compraId);
   });
 
@@ -604,7 +604,7 @@ listaCompras.addEventListener("click", function (evento) {
     return;
   }
 
-  const parcela = compra.parcelas.find(function (item) {
+  const parcela = compra.parcelas.find((item) => {
     return item.numero === Number(botaoDesfazer.dataset.parcelaNumero);
   });
 
@@ -625,14 +625,14 @@ listaCompras.addEventListener("click", function (evento) {
   atualizarResumo();
 });
 
-listaCompras.addEventListener("click", function (evento) {
+listaCompras.addEventListener("click", (evento) => {
   const botaoPagar = evento.target.closest(".botao-pagar");
 
   if (!botaoPagar) {
     return;
   }
 
-  const compra = compras.find(function (item) {
+  const compra = compras.find((item) => {
     return item.id === Number(botaoPagar.dataset.compraId);
   });
 
@@ -640,7 +640,7 @@ listaCompras.addEventListener("click", function (evento) {
     return;
   }
 
-  const parcela = compra.parcelas.find(function (item) {
+  const parcela = compra.parcelas.find((item) => {
     return item.numero === Number(botaoPagar.dataset.parcelaNumero);
   });
 
@@ -657,7 +657,7 @@ listaCompras.addEventListener("click", function (evento) {
   atualizarResumo();
 });
 
-formulario.addEventListener("submit", function (evento) {
+formulario.addEventListener("submit", (evento) => {
   evento.preventDefault();
 
   const descricao = campoDescricao.value.trim();
