@@ -469,7 +469,7 @@ a {
 
 .compra-item {
     display: grid;
-    grid-template-columns: minmax(220px, 1.5fr) repeat(4, minmax(130px, 1fr)) 36px;
+    grid-template-columns: minmax(220px, 1.5fr) repeat(4, minmax(130px, 1fr)) auto;
     gap: 16px;
     align-items: center;
     padding: 20px;
@@ -502,13 +502,33 @@ a {
     font-size: 0.9rem;
 }
 
+.compra-acoes {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.botao-editar,
 .botao-excluir {
-    width: 36px;
     height: 36px;
-    color: var(--cor-erro);
     background-color: transparent;
     border: 1px solid var(--cor-borda-controle);
     border-radius: 5px;
+}
+
+.botao-editar {
+    padding: 0 10px;
+    color: var(--cor-texto-suave);
+}
+
+.botao-editar:hover {
+    color: var(--cor-destaque);
+    border-color: var(--cor-destaque);
+}
+
+.botao-excluir {
+    width: 36px;
+    color: var(--cor-erro);
 }
 
 .botao-excluir:hover {
@@ -684,6 +704,10 @@ a {
     .compra-item {
         grid-template-columns: 1fr;
         gap: 16px;
+    }
+
+    .compra-acoes {
+        justify-self: start;
     }
 
     .parcela-item {

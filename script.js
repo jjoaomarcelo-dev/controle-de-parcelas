@@ -507,7 +507,21 @@ function mostrarCompras(compraAbertaId = null) {
       compra.ultimoVencimento
     );
 
+    const acoesCompra = document.createElement("div");
+    const botaoEditar = document.createElement("button");
     const botaoExcluir = document.createElement("button");
+
+    acoesCompra.classList.add("compra-acoes");
+
+    botaoEditar.classList.add("botao-editar");
+    botaoEditar.type = "button";
+    botaoEditar.dataset.id = compra.id;
+    botaoEditar.textContent = "Editar";
+    botaoEditar.setAttribute(
+      "aria-label",
+      `Editar compra ${compra.descricao}`
+    );
+
     botaoExcluir.classList.add("botao-excluir");
     botaoExcluir.type = "button";
     botaoExcluir.dataset.id = compra.id;
@@ -517,6 +531,8 @@ function mostrarCompras(compraAbertaId = null) {
       "aria-label",
       `Excluir compra ${compra.descricao}`
     );
+
+    acoesCompra.append(botaoEditar, botaoExcluir);
 
     const agendaParcelas = criarAgendaParcelas(compra);
 
@@ -530,7 +546,7 @@ function mostrarCompras(compraAbertaId = null) {
       dataCompra,
       primeiroVencimento,
       ultimoVencimento,
-      botaoExcluir,
+      acoesCompra,
       agendaParcelas
     );
 
