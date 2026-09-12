@@ -36,6 +36,7 @@ const saldoEmAberto = document.querySelector("#saldo-em-aberto");
 const listaCompras = document.querySelector("#lista-compras");
 const estadoVazio = document.querySelector("#estado-vazio");
 const mensagemErro = document.querySelector("#mensagem-erro");
+const botaoEnviar = formulario.querySelector(".botao-principal");
 const botaoTema = document.querySelector("#botao-tema");
 const rotuloTema = document.querySelector("#rotulo-tema");
 const iconeTema = botaoTema.querySelector("span");
@@ -44,6 +45,7 @@ const chaveArmazenamento = "controleDeParcelas.compras";
 const chaveTema = "capiva.tema";
 
 let compras = carregarCompras();
+let compraEmEdicaoId = null;
 let mesEmExibicao = new Date();
 mesEmExibicao.setDate(1);
 mesEmExibicao.setHours(0, 0, 0, 0);
@@ -649,10 +651,43 @@ const pagarParcela = (compraId, parcelaNumero) => {
   atualizarResumo();
 };
 
+const editarCompra = (compraId) => {
+  const compra = compras.find((item) => {
+    return item.id === compraId;
+  });
+
+  if (!compra) {
+    return;
+  }
+
+  compraEmEdicaoId = compra.id;
+  campoDescricao.value = compra.descricao;
+  campoDataCompra.value = compra.dataCompra;
+  campoFormaPagamento.value = compra.formaPagamento;
+  campoValorTotal.value = compra.valorTotal;
+  campoQuantidadeParcelas.value = compra.quantidadeParcelas;
+  campoParcelasPagas.value = compra.parcelasPagas;
+  campoParcelasPagas.disabled = true;
+  campoPrimeiroVencimento.value = compra.primeiroVencimento;
+  botaoEnviar.textContent = "Salvar alterações";
+  mensagemErro.hidden = true;
+
+  atualizarRotuloVencimento();
+  atualizarPrevia();
+  formulario.scrollIntoView({ behavior: "smooth", block: "start" });
+  campoDescricao.focus({ preventScroll: true });
+};
+
 const tratarCliqueNaLista = (evento) => {
+  const botaoEditar = evento.target.closest(".botao-editar");
   const botaoExcluir = evento.target.closest(".botao-excluir");
   const botaoDesfazer = evento.target.closest(".botao-desfazer");
   const botaoPagar = evento.target.closest(".botao-pagar");
+
+  if (botaoEditar) {
+    editarCompra(Number(botaoEditar.dataset.id));
+    return;
+  }
 
   if (botaoExcluir) {
     excluirCompra(Number(botaoExcluir.dataset.id));
@@ -729,8 +764,12 @@ formulario.addEventListener("submit", (evento) => {
     quantidadeParcelas - 1
   );
 
+  const compraAnterior = compras.find((item) => {
+    return item.id === compraEmEdicaoId;
+  });
+
   const compra = {
-    id: Date.now(),
+    id: compraAnterior?.id || Date.now(),
     descricao,
     dataCompra: campoDataCompra.value,
     formaPagamento,
@@ -742,13 +781,23 @@ formulario.addEventListener("submit", (evento) => {
     saldoEmAberto:
       valorTotal * ((quantidadeParcelas - parcelasPagas) / quantidadeParcelas),
     primeiroVencimento: campoPrimeiroVencimento.value,
-    ultimoVencimento: ultimoVencimento.toLocaleDateString("pt-BR")
+    ultimoVencimento: ultimoVencimento.toLocaleDateString("pt-BR"),
+    parcelas: compraAnterior?.parcelas || []
   };
 
   compra.parcelas = gerarParcelas(compra);
   atualizarDadosCompra(compra);
 
-  compras.push(compra);
+  if (compraAnterior) {
+    const indiceCompra = compras.findIndex((item) => {
+      return item.id === compraAnterior.id;
+    });
+
+    compras[indiceCompra] = compra;
+  } else {
+    compras.push(compra);
+  }
+
   salvarCompras();
   mensagemErro.hidden = true;
 
@@ -756,6 +805,9 @@ formulario.addEventListener("submit", (evento) => {
   atualizarResumo();
 
   formulario.reset();
+  compraEmEdicaoId = null;
+  campoParcelasPagas.disabled = false;
+  botaoEnviar.textContent = "Adicionar compra";
   atualizarRotuloVencimento();
   atualizarPrevia();
   campoDescricao.focus();
